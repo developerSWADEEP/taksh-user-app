@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:sixam_mart/util/app_constants.dart';
 
-ThemeData light({Color color = const Color(0xFFFF671F)}) => ThemeData(
+ThemeData light({Color color = const Color(0xFFe97f16)}) => ThemeData(
   fontFamily: AppConstants.fontFamily,
   primaryColor: color,
   secondaryHeaderColor: const Color(0xFF0B8443),
   disabledColor: const Color(0xFF9F9F9F),
   brightness: Brightness.light,
-  hintColor: const Color(0xFFFFFFFF),
+  hintColor: const Color(0xFF9F9F9F),
   cardColor: Colors.white,
   shadowColor: Colors.black.withValues(alpha: 0.03),
   textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: color)),
@@ -16,7 +16,7 @@ ThemeData light({Color color = const Color(0xFFFF671F)}) => ThemeData(
   popupMenuTheme: const PopupMenuThemeData(color: Colors.white, surfaceTintColor: Colors.white),
   dialogTheme: const DialogThemeData(surfaceTintColor: Colors.white),
   floatingActionButtonTheme: FloatingActionButtonThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(500))),
-  bottomAppBarTheme: const BottomAppBarTheme(
+  bottomAppBarTheme: const BottomAppBarThemeData(
     surfaceTintColor: Colors.white, height: 60,
     padding: EdgeInsets.symmetric(vertical: 5),
   ),

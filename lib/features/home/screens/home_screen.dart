@@ -8,6 +8,7 @@ import 'package:sixam_mart/features/home/controllers/home_controller.dart';
 import 'package:sixam_mart/features/home/widgets/all_store_filter_widget.dart';
 import 'package:sixam_mart/features/home/widgets/cashback_logo_widget.dart';
 import 'package:sixam_mart/features/home/widgets/cashback_dialog_widget.dart';
+import 'package:sixam_mart/features/home/widgets/delivery_navigation_widget.dart';
 import 'package:sixam_mart/features/home/widgets/refer_bottom_sheet_widget.dart';
 import 'package:sixam_mart/features/item/controllers/campaign_controller.dart';
 import 'package:sixam_mart/features/category/controllers/category_controller.dart';
@@ -26,9 +27,6 @@ import 'package:sixam_mart/features/home/screens/modules/grocery_home_screen.dar
 import 'package:sixam_mart/features/home/screens/modules/pharmacy_home_screen.dart';
 import 'package:sixam_mart/features/home/screens/modules/shop_home_screen.dart';
 import 'package:sixam_mart/features/parcel/controllers/parcel_controller.dart';
-import 'package:sixam_mart/features/rental_module/home/controllers/taxi_home_controller.dart';
-import 'package:sixam_mart/features/rental_module/home/screens/taxi_home_screen.dart';
-import 'package:sixam_mart/features/rental_module/rental_cart_screen/controllers/taxi_cart_controller.dart';
 import 'package:sixam_mart/helper/address_helper.dart';
 import 'package:sixam_mart/helper/auth_helper.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
@@ -47,6 +45,9 @@ import 'package:get/get.dart';
 import 'package:sixam_mart/features/home/widgets/module_view.dart';
 import 'package:sixam_mart/features/parcel/screens/parcel_category_screen.dart';
 
+import '../../../common/widgets/custom_image.dart';
+import '../../../common/widgets/custom_ink_well.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -54,14 +55,8 @@ class HomeScreen extends StatefulWidget {
   static Future<void> loadData(bool reload, {bool fromModule = false}) async {
     Get.find<LocationController>().syncZoneData();
     Get.find<FlashSaleController>().setEmptyFlashSale(fromModule: fromModule);
-    // print('------------call from home');
-    // await Get.find<CartController>().getCartDataOnline();
-    if(AuthHelper.isLoggedIn()) {
-      Get.find<StoreController>().getVisitAgainStoreList(fromModule: fromModule);
-    }
-    if(Get.find<SplashController>().module != null && !Get.find<SplashController>().configModel!.moduleConfig!.module!.isParcel! && !Get.find<SplashController>().configModel!.moduleConfig!.module!.isTaxi!) {
+    if(Get.find<SplashController>().module != null && !Get.find<SplashController>().configModel!.moduleConfig!.module!.isParcel!) {
       Get.find<BannerController>().getBannerList(reload);
-      Get.find<StoreController>().getRecommendedStoreList();
       if(Get.find<SplashController>().module!.moduleType.toString() == AppConstants.grocery) {
         Get.find<FlashSaleController>().getFlashSale(reload, false);
       }
@@ -78,14 +73,14 @@ class HomeScreen extends StatefulWidget {
       Get.find<CampaignController>().getItemCampaignList(reload);
       Get.find<ItemController>().getPopularItemList(reload, 'all', false);
       Get.find<StoreController>().getLatestStoreList(reload, 'all', false);
-      Get.find<StoreController>().getTopOfferStoreList(reload, false);
       Get.find<ItemController>().getReviewedItemList(reload, 'all', false);
       Get.find<ItemController>().getRecommendedItemList(reload, 'all', false);
       Get.find<StoreController>().getStoreList(1, reload);
+      Get.find<StoreController>().getRecommendedStoreList();
       Get.find<AdvertisementController>().getAdvertisementList();
     }
     if(AuthHelper.isLoggedIn()) {
-      // Get.find<StoreController>().getVisitAgainStoreList(fromModule: fromModule);
+      Get.find<StoreController>().getVisitAgainStoreList(fromModule: fromModule);
       await Get.find<ProfileController>().getUserInfo();
       Get.find<NotificationController>().getNotificationList(reload);
       Get.find<CouponController>().getCouponList();
@@ -184,16 +179,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ).then((value) => Get.find<SplashController>().saveReferBottomSheetStatus(false));
   }
 
-  Future<void> loadTaxiApis() async{
-   await Get.find<TaxiHomeController>().getTaxiBannerList(true);
-   await Get.find<TaxiHomeController>().getTopRatedCarList(1, true);
-    if (AuthHelper.isLoggedIn()) {
-      await Get.find<AddressController>().getAddressList();
-      await Get.find<TaxiHomeController>().getTaxiCouponList(true);
-      await Get.find<TaxiCartController>().getCarCartList();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return GetBuilder<SplashController>(builder: (splashController) {
@@ -201,13 +186,11 @@ class _HomeScreenState extends State<HomeScreen> {
         splashController.switchModule(0, true);
       }
       bool showMobileModule = !ResponsiveHelper.isDesktop(context) && splashController.module == null && splashController.configModel!.module == null;
-      // bool isParcel = splashController.module != null && splashController.configModel!.moduleConfig!.module!.isParcel!;
-      bool isParcel = splashController.module != null && splashController.module!.moduleType.toString() == AppConstants.parcel;
+      bool isParcel = splashController.module != null && splashController.configModel!.moduleConfig!.module!.isParcel!;
       bool isPharmacy = splashController.module != null && splashController.module!.moduleType.toString() == AppConstants.pharmacy;
       bool isFood = splashController.module != null && splashController.module!.moduleType.toString() == AppConstants.food;
       bool isShop = splashController.module != null && splashController.module!.moduleType.toString() == AppConstants.ecommerce;
       bool isGrocery = splashController.module != null && splashController.module!.moduleType.toString() == AppConstants.grocery;
-      bool isTaxi = splashController.module != null && splashController.module!.moduleType.toString() == AppConstants.taxi;
 
       return GetBuilder<HomeController>(builder: (homeController) {
         return Scaffold(
@@ -218,8 +201,15 @@ class _HomeScreenState extends State<HomeScreen> {
           body: isParcel ? const ParcelCategoryScreen() : SafeArea(
             child: RefreshIndicator(
               onRefresh: () async {
+                HomeScreen.loadData(false).then((value) {
+                  Get.find<SplashController>().getReferBottomSheetStatus();
+
+                  if((Get.find<ProfileController>().userInfoModel?.isValidForDiscount??false) && Get.find<SplashController>().showReferBottomSheet) {
+                    _showReferBottomSheet();
+                  }
+                });
                 splashController.setRefreshing(true);
-                if (Get.find<SplashController>().module != null && !isTaxi) {
+                if (Get.find<SplashController>().module != null) {
                   await Get.find<LocationController>().syncZoneData();
                   await Get.find<BannerController>().getBannerList(true);
                   if (isGrocery) {
@@ -233,7 +223,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   Get.find<CampaignController>().getBasicCampaignList(true);
                   await Get.find<ItemController>().getPopularItemList(true, 'all', false);
                   await Get.find<StoreController>().getLatestStoreList(true, 'all', false);
-                  await Get.find<StoreController>().getTopOfferStoreList(true, false);
                   await Get.find<ItemController>().getReviewedItemList(true, 'all', false);
                   await Get.find<StoreController>().getStoreList(1, true);
                   Get.find<AdvertisementController>().getAdvertisementList();
@@ -251,8 +240,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     Get.find<ItemController>().getFeaturedCategoriesItemList(true, true);
                     Get.find<BrandsController>().getBrandList();
                   }
-                } else if(isTaxi) {
-                  await loadTaxiApis();
                 } else {
                   await Get.find<BannerController>().getFeaturedBanner();
                   await Get.find<SplashController>().getModules();
@@ -270,22 +257,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
 
+                  // /// Delivery Navigation
+                  SliverToBoxAdapter(
+                    child: _TopQuickButtons(),
+                  ),
+
                   /// App Bar
                   SliverAppBar(
                     floating: true,
                     elevation: 0,
                     automaticallyImplyLeading: false,
                     surfaceTintColor: Theme.of(context).colorScheme.surface,
-                    backgroundColor: ResponsiveHelper.isDesktop(context) ? Colors.transparent : Theme.of(context).colorScheme.surface,
+                    backgroundColor: ResponsiveHelper.isDesktop(context) ? Colors.transparent : Theme.of(context).primaryColor,
                     title: Center(child: Container(
-                      width: Dimensions.webMaxWidth, height: Get.find<LocalizationController>().isLtr ? 60 : 70, color: Theme.of(context).colorScheme.surface,
+                      width: Dimensions.webMaxWidth, height: Get.find<LocalizationController>().isLtr ? 60 : 70, color: Theme.of(context).primaryColor,
                       child: Row(children: [
                         (splashController.module != null && splashController.configModel!.module == null && splashController.moduleList != null && splashController.moduleList!.length != 1) ? InkWell(
                           onTap: () {
                             splashController.removeModule();
                             Get.find<StoreController>().resetStoreData();
                           },
-                          child: Image.asset(Images.moduleIcon, height: 25, width: 25, color: Theme.of(context).textTheme.bodyLarge!.color),
+                          child: Image.asset(Images.moduleIcon, height: 25, width: 25, color: Theme.of(context).cardColor),
                         ) : const SizedBox(),
                         SizedBox(width: (splashController.module != null && splashController.configModel!.module == null && splashController.moduleList != null && splashController.moduleList!.length != 1) ? Dimensions.paddingSizeSmall : 0),
 
@@ -300,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                 Text(
                                   AuthHelper.isLoggedIn() ? AddressHelper.getUserAddressFromSharedPref()!.addressType!.tr : 'your_location'.tr,
-                                  style: robotoMedium.copyWith(color: Theme.of(context).textTheme.bodyLarge!.color, fontSize: Dimensions.fontSizeDefault),
+                                  style: robotoMedium.copyWith(color: Theme.of(context).cardColor, fontSize: Dimensions.fontSizeDefault),
                                   maxLines: 1, overflow: TextOverflow.ellipsis,
                                 ),
 
@@ -308,12 +300,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Flexible(
                                     child: Text(
                                       AddressHelper.getUserAddressFromSharedPref()!.address!,
-                                      style: robotoRegular.copyWith(color: Theme.of(context).disabledColor, fontSize: Dimensions.fontSizeSmall),
+                                      style: robotoRegular.copyWith(color: Theme.of(context).cardColor, fontSize: Dimensions.fontSizeSmall),
                                       maxLines: 1, overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
 
-                                  Icon(Icons.expand_more, color: Theme.of(context).disabledColor, size: 18),
+                                  Icon(Icons.expand_more, color: Theme.of(context).cardColor, size: 18),
 
                                 ]),
 
@@ -324,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         InkWell(
                           child: GetBuilder<NotificationController>(builder: (notificationController) {
                             return Stack(children: [
-                              Icon(CupertinoIcons.bell, size: 25, color: Theme.of(context).textTheme.bodyLarge!.color),
+                              Icon(CupertinoIcons.bell, size: 25, color: Theme.of(context).cardColor),
                               notificationController.hasNotification ? Positioned(top: 0, right: 0, child: Container(
                                 height: 10, width: 10, decoration: BoxDecoration(
                                 color: Theme.of(context).primaryColor, shape: BoxShape.circle,
@@ -341,40 +333,48 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
 
                   /// Search Button
-                  !showMobileModule && !isTaxi ? SliverPersistentHeader(
+                  !showMobileModule ? SliverPersistentHeader(
                     pinned: true,
                     delegate: SliverDelegate(callback: (val){}, child: Center(child: Container(
-                      height: 50, width: Dimensions.webMaxWidth,
-                      color: searchBgShow ? Get.find<ThemeController>().darkTheme ? Theme.of(context).colorScheme.surface : Theme.of(context).cardColor : null,
-                      padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall),
-                      child: isTaxi? Container(color: Theme.of(context).primaryColor): InkWell(
-                        onTap: () => Get.toNamed(RouteHelper.getSearchRoute()),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall),
-                          margin: const EdgeInsets.symmetric(vertical: 3),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.2), width: 1),
-                            borderRadius: BorderRadius.circular(25),
-                            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 1)],
-                          ),
-                          child: Row(children: [
-                            Icon(
-                              CupertinoIcons.search, size: 25,
-                              color: Theme.of(context).primaryColor,
+                      color: Theme.of(context).primaryColor,
+                      child: Container(
+                        height: 55, width: Dimensions.webMaxWidth,
+                        color: searchBgShow ? Get.find<ThemeController>().darkTheme ? Theme.of(context).colorScheme.surface : Theme.of(context).cardColor : null,
+                        padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall),
+                        child: InkWell(
+                          onTap: () => Get.toNamed(RouteHelper.getSearchRoute()),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall),
+                            margin: const EdgeInsets.symmetric(vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).cardColor,
+                              border: Border.all(color: Theme.of(context).primaryColor.withOpacity(0.2), width: 1),
+                              borderRadius: BorderRadius.circular(25),
+                              boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 1)],
                             ),
-                            const SizedBox(width: Dimensions.paddingSizeExtraSmall),
-                            Expanded(child: Text(
-                              Get.find<SplashController>().configModel!.moduleConfig!.module!.showRestaurantText! ? 'search_food_or_restaurant'.tr : 'search_item_or_store'.tr,
-                              style: robotoRegular.copyWith(
-                                fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).hintColor,
+                            child: Row(children: [
+                              Icon(
+                                CupertinoIcons.search, size: 25,
+                                color: Theme.of(context).primaryColor,
                               ),
-                            )),
-                          ]),
+                              const SizedBox(width: Dimensions.paddingSizeExtraSmall),
+                              Expanded(child: Text(
+                                Get.find<SplashController>().configModel!.moduleConfig!.module!.showRestaurantText! ? 'search_food_or_restaurant'.tr : 'search_item_or_store'.tr,
+                                style: robotoRegular.copyWith(
+                                  fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).hintColor,
+                                ),
+                              )),
+                            ]),
+                          ),
                         ),
                       ),
                     ))),
                   ) : const SliverToBoxAdapter(),
+
+                  // /// Delivery Navigation
+                  // !showMobileModule ? const SliverToBoxAdapter(
+                  //   child: DeliveryNavigationWidget(),
+                  // ) : const SliverToBoxAdapter(),
 
                   SliverToBoxAdapter(
                     child: Center(child: SizedBox(
@@ -385,14 +385,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             : isPharmacy ? const PharmacyHomeScreen()
                             : isFood ? const FoodHomeScreen()
                             : isShop ? const ShopHomeScreen()
-                            : isTaxi ? const TaxiHomeScreen()
                             : const SizedBox(),
 
                       ]) : ModuleView(splashController: splashController),
                     )),
                   ),
 
-                  !showMobileModule && !isTaxi ? SliverPersistentHeader(
+                  !showMobileModule ? SliverPersistentHeader(
                     key: _headerKey,
                     pinned: true,
                     delegate: SliverDelegate(
@@ -404,7 +403,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ) : const SliverToBoxAdapter(),
 
-                  SliverToBoxAdapter(child: !showMobileModule && !isTaxi ? Center(child: GetBuilder<StoreController>(builder: (storeController) {
+                  SliverToBoxAdapter(child: !showMobileModule ? Center(child: GetBuilder<StoreController>(builder: (storeController) {
                     return Padding(
                       padding: EdgeInsets.only(bottom: ResponsiveHelper.isDesktop(context) ? 0 : 100),
                       child: PaginatedListView(
@@ -470,5 +469,179 @@ class SliverDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(SliverDelegate oldDelegate) {
     return oldDelegate.maxExtent != height || oldDelegate.minExtent != height || child != oldDelegate.child;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Quick menu row: 30 minit delivery | 1 day Delivery | Services
+// ─────────────────────────────────────────────────────────────────────────────
+class _TopQuickButtons extends StatefulWidget {
+  const _TopQuickButtons({super.key});
+
+  @override
+  State<_TopQuickButtons> createState() => _TopQuickButtonsState();
+}
+
+class _TopQuickButtonsState extends State<_TopQuickButtons> {
+  int _selectedIndex = 0; // 0 = 30 mins, 1 = 1 day, 2 = services
+
+  @override
+  Widget build(BuildContext context) {
+    final Color card = Theme.of(context).cardColor;
+    final Color primary = Theme.of(context).primaryColor;
+    final Color highlightColor = const Color(0xFFFFE26C);
+
+    Widget pill({
+      required int index,
+      required IconData icon,
+      required String label,
+      VoidCallback? onTap,
+    }) {
+      final bool isSelected = _selectedIndex == index;
+      final Color bgColor = isSelected ? highlightColor : card;
+      final Color iconTextColor = isSelected ? Colors.black : primary;
+
+      return Expanded(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            setState(() {
+              _selectedIndex = index;
+            });
+            onTap?.call();
+          },
+          child: Container(
+            height: 60,
+            margin: const EdgeInsets.symmetric(horizontal: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 6,
+                  spreadRadius: 1,
+                  offset: Offset(0, 2),
+                )
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 20, color: iconTextColor),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: robotoMedium.copyWith(
+                      fontSize: Dimensions.fontSizeSmall,
+                      color: iconTextColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Center(
+      child: Container(
+        width: Dimensions.webMaxWidth,
+        color: Theme.of(context).primaryColor,
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 200,
+              padding: const EdgeInsets.symmetric(horizontal: 5.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(25),
+                child: Image.asset(Images.logo),
+              ),
+            ),
+            // /// module view
+            // Get.find<SplashController>().moduleList != null ? Get.find<SplashController>().moduleList!.isNotEmpty ? GridView.builder(
+            //   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            //     crossAxisCount: 4,
+            //     mainAxisSpacing: Dimensions.paddingSizeSmall,
+            //     crossAxisSpacing: Dimensions.paddingSizeSmall,
+            //     childAspectRatio: (1/1),
+            //   ),
+            //   padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
+            //   itemCount: Get.find<SplashController>().moduleList!.length,
+            //   shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+            //   itemBuilder: (context, index) {
+            //     return Container(
+            //       decoration: BoxDecoration(
+            //         borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+            //         color: Theme.of(context).cardColor,
+            //         border: Border.all(color: Theme.of(context).primaryColor, width: 0.15),
+            //         boxShadow: [BoxShadow(color: Theme.of(context).primaryColor.withOpacity(0.1), spreadRadius: 1, blurRadius: 3)],
+            //       ),
+            //       child: CustomInkWell(
+            //         onTap: () => Get.find<SplashController>().switchModule(index, true),
+            //         radius: Dimensions.radiusDefault,
+            //         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            //
+            //           ClipRRect(
+            //             borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+            //             child: CustomImage(
+            //               image: '${Get.find<SplashController>().moduleList![index].iconFullUrl}',
+            //               height: 50, width: 50,
+            //             ),
+            //           ),
+            //
+            //           Center(child: Text(
+            //             Get.find<SplashController>().moduleList![index].moduleName!,
+            //             textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis,
+            //             style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall),
+            //           )),
+            //
+            //         ]),
+            //       ),
+            //     );
+            //   },
+            // ) : Center(child: Padding(
+            //   padding: const EdgeInsets.only(top: Dimensions.paddingSizeSmall), child: Text('no_module_found'.tr),
+            // )) : ModuleShimmer(isEnabled: Get.find<SplashController>().moduleList == null),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                pill(
+                  index: 0,
+                  icon: Icons.flash_on_rounded,
+                  label: '30 Mins. delivery',
+                  onTap: () {
+                    // Action for express delivery
+                  },
+                ),
+                pill(
+                  index: 1,
+                  icon: Icons.local_shipping_outlined,
+                  label: '1 day Delivery',
+                  onTap: () {
+                    // Action for 1 day delivery
+                  },
+                ),
+                pill(
+                  index: 2,
+                  icon: Icons.design_services_outlined,
+                  label: 'Services',
+                  onTap: () {
+                    // Action for services
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

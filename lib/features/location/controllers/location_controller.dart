@@ -47,6 +47,10 @@ class LocationController extends GetxController implements GetxService {
   bool _loading = false;
   bool get loading => _loading;
 
+  void hideSuggestedLocation(){
+    _showLocationSuggestion = !_showLocationSuggestion;
+  }
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 

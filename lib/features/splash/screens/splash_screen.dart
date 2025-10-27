@@ -168,8 +168,14 @@ class SplashScreenState extends State<SplashScreen> {
           child: splashController.hasConnection ? Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset(Images.logo, width: 200),
-              const SizedBox(height: Dimensions.paddingSizeSmall),
+              Center(
+                child: Image.asset(
+                  'assets/image/playstore.png',
+                  // height: MediaQuery.sizeOf(context).height,
+                  // width: MediaQuery.sizeOf(context).width,
+                  fit: BoxFit.cover, // Makes the GIF cover the entire screen
+                ),
+              ),
             ],
           ) : NoInternetScreen(child: SplashScreen(body: widget.body)),
         );
