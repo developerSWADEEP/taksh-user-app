@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sixam_mart/common/widgets/custom_image.dart';
 import 'package:sixam_mart/common/widgets/custom_ink_well.dart';
+import 'package:sixam_mart/features/dashboard/screens/dashboard_screen.dart';
+import 'package:sixam_mart/features/home/screens/home_screen.dart';
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/util/dimensions.dart';
 import 'package:sixam_mart/util/styles.dart';
@@ -76,6 +78,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     onTap: () {
                       splashController.switchModule(index, true);
                       // Navigate back after module switch
+                      Get.offAll(() => const DashboardScreen(pageIndex: 0));
                       Get.back();
                     },
                     radius: Dimensions.radiusLarge,
