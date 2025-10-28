@@ -8,6 +8,8 @@ import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/util/dimensions.dart';
 import 'package:sixam_mart/util/styles.dart';
 
+import '../../../helper/route_helper.dart';
+
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
 
@@ -28,10 +30,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             automaticallyImplyLeading: false,
             title: Row(
               children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_back, color: Theme.of(context).cardColor),
-                  onPressed: () => Get.back(),
-                ),
                 Expanded(
                   child: Text(
                     'categories'.tr,
@@ -77,9 +75,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   child: CustomInkWell(
                     onTap: () {
                       splashController.switchModule(index, true);
-                      // Navigate back after module switch
-                      Get.offAll(() => const DashboardScreen(pageIndex: 0));
-                      Get.back();
+                      // Navigate to dashboard with home screen (index 0) to show bottom navigation bar
+                      Get.offAllNamed(RouteHelper.getMainRoute('home'));
                     },
                     radius: Dimensions.radiusLarge,
                     child: Column(

@@ -182,9 +182,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<SplashController>(builder: (splashController) {
-      if(splashController.moduleList != null && splashController.moduleList!.length == 1) {
-        splashController.switchModule(0, true);
-      }
+      // if(splashController.moduleList != null && splashController.moduleList!.length == 1) {
+      //   splashController.switchModule(0, true);
+      // }
       bool showMobileModule = !ResponsiveHelper.isDesktop(context) && splashController.module == null && splashController.configModel!.module == null;
       bool isParcel = splashController.module != null && splashController.configModel!.moduleConfig!.module!.isParcel!;
       bool isPharmacy = splashController.module != null && splashController.module!.moduleType.toString() == AppConstants.pharmacy;

@@ -54,6 +54,13 @@ class SplashScreenState extends State<SplashScreen> {
     // _route();
     Get.find<SplashController>().getConfigData(notificationBody: widget.body);
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final sc = Get.find<SplashController>();
+      if (sc.module == null && sc.moduleList != null && sc.moduleList!.isNotEmpty) {
+        sc.switchModule(0, true);
+      }
+    });
+
   }
 
   @override

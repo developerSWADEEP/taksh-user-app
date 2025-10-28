@@ -256,9 +256,16 @@ class SplashController extends GetxController implements GetxService {
           _moduleList!.add(module);
         }
       }
+
+      // 🔹 Auto-select first module (index 0) if nothing is selected yet.
+      if (_module == null && _moduleList!.isNotEmpty) {
+        // If your first item is Grocery, this guarantees GroceryHomeScreen.
+        switchModule(0, true);
+      }
     }
     update();
   }
+
 
   Future<void> _showInterestPage() async {
     if(!Get.find<ProfileController>().userInfoModel!.selectedModuleForInterest!.contains(Get.find<SplashController>().module!.id)
