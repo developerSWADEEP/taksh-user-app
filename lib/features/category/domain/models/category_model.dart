@@ -7,6 +7,9 @@ class CategoryModel {
   String? _createdAt;
   String? _updatedAt;
   String? _imageFullUrl;
+  String? _description;
+  int? _serviceCount;
+  String? _uuid; // Original UUID from Demandium API
 
   CategoryModel(
     {int? id,
@@ -15,7 +18,10 @@ class CategoryModel {
     int? position,
     String? createdAt,
     String? updatedAt,
-    String? imageFullUrl}) {
+    String? imageFullUrl,
+    String? description,
+    int? serviceCount,
+    String? uuid}) {
     _id = id;
     _name = name;
     _parentId = parentId;
@@ -23,6 +29,9 @@ class CategoryModel {
     _createdAt = createdAt;
     _updatedAt = updatedAt;
     _imageFullUrl = imageFullUrl;
+    _description = description;
+    _serviceCount = serviceCount;
+    _uuid = uuid;
   }
 
   int? get id => _id;
@@ -32,6 +41,9 @@ class CategoryModel {
   String? get createdAt => _createdAt;
   String? get updatedAt => _updatedAt;
   String? get imageFullUrl => _imageFullUrl;
+  String? get description => _description;
+  int? get serviceCount => _serviceCount;
+  String? get uuid => _uuid;
 
   CategoryModel.fromJson(Map<String, dynamic> json) {
     _id = json['id'];
@@ -41,6 +53,9 @@ class CategoryModel {
     _createdAt = json['created_at'];
     _updatedAt = json['updated_at'];
     _imageFullUrl = json['image_full_url'];
+    _description = json['description'];
+    _serviceCount = json['services_count'];
+    _uuid = json['uuid'];
   }
 
   Map<String, dynamic> toJson() {
@@ -52,6 +67,9 @@ class CategoryModel {
     data['created_at'] = _createdAt;
     data['updated_at'] = _updatedAt;
     data['image_full_url'] = _imageFullUrl;
+    data['description'] = _description;
+    data['services_count'] = _serviceCount;
+    data['uuid'] = _uuid;
 
     return data;
   }

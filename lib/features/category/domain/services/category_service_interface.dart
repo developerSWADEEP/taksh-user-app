@@ -8,6 +8,7 @@ abstract class CategoryServiceInterface {
   Future<List<CategoryModel>?> getCategoryList(bool allCategory, {DataSourceEnum? source});
   Future<List<CategoryModel>?> getServiceCategoryList({DataSourceEnum? source});
   Future<List<CategoryModel>?> getSubCategoryList(String? parentID);
+  Future<List<CategoryModel>?> getServiceSubCategoryList(String categoryID);
   Future<ItemModel?> getCategoryItemList(String? categoryID, int offset, String type);
   Future<StoreModel?> getCategoryStoreList(String? categoryID, int offset, String type);
   Future<Response> getSearchData(String? query, String? categoryID, bool isStore, String type);

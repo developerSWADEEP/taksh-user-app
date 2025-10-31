@@ -22,7 +22,15 @@ class _AvailableServicesScreenState extends State<AvailableServicesScreen> {
   void initState() {
     super.initState();
     // Ensure service categories are loaded
-    Get.find<CategoryController>().getServiceCategoryList(false);
+    Get.find<CategoryController>().getServiceCategoryList(false).then((_) {
+      // Load subcategories for the first category
+      final categoryController = Get.find<CategoryController>();
+      if (categoryController.serviceCategoryList != null && 
+          categoryController.serviceCategoryList!.isNotEmpty &&
+          categoryController.serviceCategoryList![0].uuid != null) {
+        categoryController.getServiceSubCategoryList(categoryController.serviceCategoryList![0].uuid!);
+      }
+    });
   }
 
   @override
@@ -53,8 +61,10 @@ class _AvailableServicesScreenState extends State<AvailableServicesScreen> {
                             setState(() {
                               _selectedCategoryIndex = index;
                             });
-                            // Load subcategories for selected category
-                            categoryController.getSubCategoryList(category.id.toString());
+                            // Load subcategories for selected category using UUID
+                            if (category.uuid != null) {
+                              categoryController.getServiceSubCategoryList(category.uuid!);
+                            }
                           },
                           child: Container(
                             width: 90,
@@ -173,8 +183,7 @@ class _AvailableServicesScreenState extends State<AvailableServicesScreen> {
                                                       ),
                                                       const SizedBox(height: Dimensions.paddingSizeExtraSmall),
                                                       Text(
-                                                        'description',
-                                                        // subCategory.description ?? 'We are well-equipped and well-prepared with experts to offer you the best servic...',
+                                                        subCategory.description ?? 'We are well-equipped and well-prepared with experts to offer you the best service...',
                                                         style: robotoRegular.copyWith(
                                                           fontSize: Dimensions.fontSizeSmall,
                                                           color: Theme.of(context).disabledColor,
@@ -184,8 +193,7 @@ class _AvailableServicesScreenState extends State<AvailableServicesScreen> {
                                                       ),
                                                       const SizedBox(height: Dimensions.paddingSizeExtraSmall),
                                                       Text(
-                                                        '123456',
-                                                        // '${subCategory.serviceCount ?? 0} ${'services'.tr}',
+                                                        '${subCategory.serviceCount ?? 0} ${'services'.tr}',
                                                         style: robotoMedium.copyWith(
                                                           fontSize: Dimensions.fontSizeSmall,
                                                           color: Theme.of(context).primaryColor,

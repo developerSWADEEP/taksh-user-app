@@ -30,11 +30,13 @@ class CategoryRepository implements CategoryRepositoryInterface {
 
   @override
   Future getList({int? offset, bool categoryList = false, bool subCategoryList = false, bool categoryItemList = false, bool categoryStoreList = false,
-    bool? allCategory, String? id, String? type, DataSourceEnum? source, bool serviceCategoryList = false}) async {
+    bool? allCategory, String? id, String? type, DataSourceEnum? source, bool serviceCategoryList = false, bool serviceSubCategoryList = false}) async {
     if (categoryList) {
       return await _getCategoryList(allCategory!, source ?? DataSourceEnum.client);
     } else if (serviceCategoryList) {
       return await _getServiceCategoryList(source ?? DataSourceEnum.client);
+    } else if (serviceSubCategoryList) {
+      return await _getServiceSubCategoryList(id!);
     } else if (subCategoryList) {
       return await _getSubCategoryList(id);
     } else if (categoryItemList) {
@@ -96,6 +98,9 @@ return await _getCategoryStoreList(id, offset!, type!);
                       'created_at': category['created_at'],
                       'updated_at': category['updated_at'],
                       'image_full_url': category['image_full_path'], // Demandium uses image_full_path
+                      'description': category['description'],
+                      'services_count': category['services_count'] ?? 0,
+                      'uuid': category['id'], // Store original UUID string
                     };
                     
                     categoryList.add(CategoryModel.fromJson(transformedCategory));
@@ -171,6 +176,78 @@ return await _getCategoryStoreList(id, offset!, type!);
       subCategoryList= [];
       response.body.forEach((category) => subCategoryList!.add(CategoryModel.fromJson(category)));
     }
+    return subCategoryList;
+  }
+
+  Future<List<CategoryModel>?> _getServiceSubCategoryList(String categoryID) async {
+    List<CategoryModel>? subCategoryList;
+    
+    try {
+      // Get the original UUID string for the category
+      // Note: We need to reverse the hash to get original UUID, but since we don't store it,
+      // we'll need to fetch all categories and find the matching one
+      String url = '${AppConstants.demandiumBaseUrl}/api/v1/customer/category/childes?limit=20&offset=1&id=$categoryID';
+      
+      print('🔍 Fetching service subcategories from: $url');
+      
+      // Prepare headers with required zone and guest info
+      Map<String, String> headers = {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-localization': Get.find<LocalizationController>().locale.languageCode,
+        'zoneid': '6e3ce413-462e-4f11-9e79-fc6b761c82d3', // Default: "All over the World" zone
+        'guest_id': '9631a970-b63e-11f0-a9f3-79599091a9e4', // Guest user ID
+      };
+      
+      print('📤 Request headers: $headers');
+      
+      http.Response response = await http.get(
+        Uri.parse(url),
+        headers: headers,
+      ).timeout(const Duration(seconds: 30));
+        
+      print('📡 Response status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        var decodedBody = jsonDecode(response.body);
+        print('📦 Response body: ${jsonEncode(decodedBody)}');
+        
+        if (decodedBody['content'] != null && decodedBody['content']['data'] != null) {
+          var data = decodedBody['content']['data'];
+          print('✅ Subcategories found - Count: ${data.length}');
+          
+          if (data.isNotEmpty) {
+            subCategoryList = [];
+            for (var category in data) {
+              try {
+                // Transform Demandium format to match CategoryModel
+                Map<String, dynamic> transformedCategory = {
+                  'id': _parseIdToInt(category['id']), // Convert UUID string to hash int
+                  'name': category['name'],
+                  'parent_id': category['parent_id'] == '0' ? 0 : _parseIdToInt(category['parent_id']),
+                  'position': category['position'],
+                  'created_at': category['created_at'],
+                  'updated_at': category['updated_at'],
+                  'image_full_url': category['image_full_path'], // Demandium uses image_full_path
+                  'description': category['description'],
+                  'services_count': category['services_count'] ?? 0,
+                  'uuid': category['id'], // Store original UUID string
+                };
+                
+                subCategoryList.add(CategoryModel.fromJson(transformedCategory));
+              } catch (e) {
+                print('❌ Error parsing subcategory: $e');
+              }
+            }
+            print('✅ Successfully parsed ${subCategoryList.length} subcategories');
+          }
+        } else {
+          print('⚠️ No subcategory data in response');
+        }
+      }
+    } catch (e) {
+      print('❌ Error fetching service subcategories: $e');
+    }
+    
     return subCategoryList;
   }
 

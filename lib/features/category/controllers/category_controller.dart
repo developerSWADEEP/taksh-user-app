@@ -126,6 +126,17 @@ class CategoryController extends GetxController implements GetxService {
     }
   }
 
+  Future<void> getServiceSubCategoryList(String categoryID) async {
+    _subCategoryList = null;
+    update();
+    List<CategoryModel>? subCategoryList = await categoryServiceInterface.getServiceSubCategoryList(categoryID);
+    if (subCategoryList != null) {
+      _subCategoryList = [];
+      _subCategoryList!.addAll(subCategoryList);
+    }
+    update();
+  }
+
   void setSubCategoryIndex(int index, String? categoryID) {
     _subCategoryIndex = index;
     if(_isStore) {

@@ -147,12 +147,14 @@ class ServicesCategoriesView extends StatelessWidget {
                                         child: RippleButton(
                                           onTap: () {
                                             // Navigate to services in that category
-                                            Get.toNamed(
-                                              RouteHelper.getServicesByCategoryRoute(
-                                                categoryController.serviceCategoryList![index].id!,
-                                                categoryController.serviceCategoryList![index].name!,
-                                              ),
-                                            );
+                                            Get.toNamed(RouteHelper.getAvailableServicesRoute());
+
+                                            // Get.toNamed(
+                                            //   RouteHelper.getServicesByCategoryRoute(
+                                            //     categoryController.serviceCategoryList![index].id!,
+                                            //     categoryController.serviceCategoryList![index].name!,
+                                            //   ),
+                                            // );
                                           },
                                         ),
                                       ),
