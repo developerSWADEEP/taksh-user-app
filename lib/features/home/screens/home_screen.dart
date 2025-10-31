@@ -43,6 +43,7 @@ import 'package:sixam_mart/features/home/screens/web_new_home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sixam_mart/features/home/widgets/module_view.dart';
+import 'package:sixam_mart/features/home/widgets/services_categories_view.dart';
 import 'package:sixam_mart/features/parcel/screens/parcel_category_screen.dart';
 
 import '../../../common/widgets/custom_image.dart';
@@ -68,6 +69,7 @@ class HomeScreen extends StatefulWidget {
       Get.find<BannerController>().getPromotionalBannerList(reload);
       Get.find<ItemController>().getDiscountedItemList(reload, false, 'all');
       Get.find<CategoryController>().getCategoryList(reload);
+      Get.find<CategoryController>().getServiceCategoryList(reload);
       Get.find<StoreController>().getPopularStoreList(reload, 'all', false);
       Get.find<CampaignController>().getBasicCampaignList(reload);
       Get.find<CampaignController>().getItemCampaignList(reload);
@@ -111,6 +113,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int _selectedTopTabIndex = 0;
   final ScrollController _scrollController = ScrollController();
   bool searchBgShow = false;
   final GlobalKey _headerKey = GlobalKey();
@@ -218,6 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   await Get.find<BannerController>().getPromotionalBannerList(true);
                   await Get.find<ItemController>().getDiscountedItemList(true, false, 'all');
                   await Get.find<CategoryController>().getCategoryList(true);
+                  await Get.find<CategoryController>().getServiceCategoryList(true);
                   await Get.find<StoreController>().getPopularStoreList(true, 'all', false);
                   await Get.find<CampaignController>().getItemCampaignList(true);
                   Get.find<CampaignController>().getBasicCampaignList(true);
@@ -259,8 +263,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   // /// Delivery Navigation
                   SliverToBoxAdapter(
-                    child: _TopQuickButtons(),
+                    child: _TopQuickButtons(
+                      onTabChanged: (index) {
+                        setState(() {
+                          _selectedTopTabIndex = index;
+                        });
+                      },
+                    ),
                   ),
+
+                  /// Services Categories View (2x4 Grid)
+                  // const SliverToBoxAdapter(
+                  //   child: ServicesCategoriesView(),
+                  // ),
 
                   /// App Bar
                   SliverAppBar(
@@ -376,19 +391,45 @@ class _HomeScreenState extends State<HomeScreen> {
                   //   child: DeliveryNavigationWidget(),
                   // ) : const SliverToBoxAdapter(),
 
+                  // SliverToBoxAdapter(
+                  //   child: Center(child: SizedBox(
+                  //     width: Dimensions.webMaxWidth,
+                  //     child: !showMobileModule ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  //
+                  //       isGrocery ? const GroceryHomeScreen()
+                  //           : isPharmacy ? const PharmacyHomeScreen()
+                  //           : isFood ? const FoodHomeScreen()
+                  //           : isShop ? const ShopHomeScreen()
+                  //           : const SizedBox(),
+                  //
+                  //     ]) : ModuleView(splashController: splashController),
+                  //   )),
+                  // ),
+
                   SliverToBoxAdapter(
-                    child: Center(child: SizedBox(
-                      width: Dimensions.webMaxWidth,
-                      child: !showMobileModule ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-
-                        isGrocery ? const GroceryHomeScreen()
-                            : isPharmacy ? const PharmacyHomeScreen()
-                            : isFood ? const FoodHomeScreen()
-                            : isShop ? const ShopHomeScreen()
-                            : const SizedBox(),
-
-                      ]) : ModuleView(splashController: splashController),
-                    )),
+                    child: Center(
+                      child: SizedBox(
+                        width: Dimensions.webMaxWidth,
+                        child: _selectedTopTabIndex == 2
+                            ? const ServicesCategoriesView()
+                            : !showMobileModule
+                            ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            isGrocery
+                                ? const GroceryHomeScreen()
+                                : isPharmacy
+                                ? const PharmacyHomeScreen()
+                                : isFood
+                                ? const FoodHomeScreen()
+                                : isShop
+                                ? const ShopHomeScreen()
+                                : const SizedBox(),
+                          ],
+                        )
+                            : ModuleView(splashController: splashController),
+                      ),
+                    ),
                   ),
 
                   !showMobileModule ? SliverPersistentHeader(
@@ -476,7 +517,9 @@ class SliverDelegate extends SliverPersistentHeaderDelegate {
 // Quick menu row: 30 minit delivery | 1 day Delivery | Services
 // ─────────────────────────────────────────────────────────────────────────────
 class _TopQuickButtons extends StatefulWidget {
-  const _TopQuickButtons({super.key});
+  final ValueChanged<int>? onTabChanged;
+
+  const _TopQuickButtons({super.key, this.onTabChanged});
 
   @override
   State<_TopQuickButtons> createState() => _TopQuickButtonsState();
@@ -496,6 +539,7 @@ class _TopQuickButtonsState extends State<_TopQuickButtons> {
       required IconData icon,
       required String label,
       VoidCallback? onTap,
+
     }) {
       final bool isSelected = _selectedIndex == index;
       final Color bgColor = isSelected ? highlightColor : card;
@@ -509,6 +553,7 @@ class _TopQuickButtonsState extends State<_TopQuickButtons> {
               _selectedIndex = index;
             });
             onTap?.call();
+            widget.onTabChanged?.call(index);
           },
           child: Container(
             height: 60,
@@ -565,51 +610,6 @@ class _TopQuickButtonsState extends State<_TopQuickButtons> {
                 child: Image.asset(Images.logo),
               ),
             ),
-            // /// module view
-            // Get.find<SplashController>().moduleList != null ? Get.find<SplashController>().moduleList!.isNotEmpty ? GridView.builder(
-            //   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            //     crossAxisCount: 4,
-            //     mainAxisSpacing: Dimensions.paddingSizeSmall,
-            //     crossAxisSpacing: Dimensions.paddingSizeSmall,
-            //     childAspectRatio: (1/1),
-            //   ),
-            //   padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
-            //   itemCount: Get.find<SplashController>().moduleList!.length,
-            //   shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-            //   itemBuilder: (context, index) {
-            //     return Container(
-            //       decoration: BoxDecoration(
-            //         borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
-            //         color: Theme.of(context).cardColor,
-            //         border: Border.all(color: Theme.of(context).primaryColor, width: 0.15),
-            //         boxShadow: [BoxShadow(color: Theme.of(context).primaryColor.withOpacity(0.1), spreadRadius: 1, blurRadius: 3)],
-            //       ),
-            //       child: CustomInkWell(
-            //         onTap: () => Get.find<SplashController>().switchModule(index, true),
-            //         radius: Dimensions.radiusDefault,
-            //         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            //
-            //           ClipRRect(
-            //             borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
-            //             child: CustomImage(
-            //               image: '${Get.find<SplashController>().moduleList![index].iconFullUrl}',
-            //               height: 50, width: 50,
-            //             ),
-            //           ),
-            //
-            //           Center(child: Text(
-            //             Get.find<SplashController>().moduleList![index].moduleName!,
-            //             textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis,
-            //             style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall),
-            //           )),
-            //
-            //         ]),
-            //       ),
-            //     );
-            //   },
-            // ) : Center(child: Padding(
-            //   padding: const EdgeInsets.only(top: Dimensions.paddingSizeSmall), child: Text('no_module_found'.tr),
-            // )) : ModuleShimmer(isEnabled: Get.find<SplashController>().moduleList == null),
             const SizedBox(height: 10),
             Row(
               children: [
@@ -634,7 +634,8 @@ class _TopQuickButtonsState extends State<_TopQuickButtons> {
                   icon: Icons.design_services_outlined,
                   label: 'Services',
                   onTap: () {
-                    // Action for services
+
+                    // Get.toNamed(RouteHelper.getAllServiceCategoriesRoute());
                   },
                 ),
               ],

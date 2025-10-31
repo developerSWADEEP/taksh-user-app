@@ -11,6 +11,9 @@ class CategoryController extends GetxController implements GetxService {
 
   List<CategoryModel>? _categoryList;
   List<CategoryModel>? get categoryList => _categoryList;
+  
+  List<CategoryModel>? _serviceCategoryList;
+  List<CategoryModel>? get serviceCategoryList => _serviceCategoryList;
 
   List<CategoryModel>? _subCategoryList;
   List<CategoryModel>? get subCategoryList => _subCategoryList;
@@ -59,6 +62,25 @@ class CategoryController extends GetxController implements GetxService {
 
   void clearCategoryList() {
     _categoryList = null;
+  }
+  
+  void clearServiceCategoryList() {
+    _serviceCategoryList = null;
+  }
+
+  Future<void> getServiceCategoryList(bool reload) async {
+    if (_serviceCategoryList == null || reload) {
+      if (reload) {
+        _serviceCategoryList = null;
+      }
+      List<CategoryModel>? categoryList;
+      categoryList = await categoryServiceInterface.getServiceCategoryList(source: DataSourceEnum.client);
+      if (categoryList != null) {
+        _serviceCategoryList = [];
+        _serviceCategoryList!.addAll(categoryList);
+      }
+      update();
+    }
   }
 
   Future<void> getCategoryList(bool reload, {bool allCategory = false, DataSourceEnum dataSource = DataSourceEnum.local, bool fromRecall = false}) async {

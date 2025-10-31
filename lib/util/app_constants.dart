@@ -15,6 +15,10 @@ class AppConstants {
 
   static const String baseUrl = 'https://6ammart-admin.6amtech.com';
   static const String categoryUri = '/api/v1/categories';
+  
+  // Demandium Service Categories
+  static const String demandiumBaseUrl = 'https://demandium-admin.6amtech.com';
+  static const String serviceCategoryUri = '/api/v1/customer/category';
   static const String bannerUri = '/api/v1/banners';
   static const String storeItemUri = '/api/v1/items/latest';
   static const String popularItemUri = '/api/v1/items/popular';

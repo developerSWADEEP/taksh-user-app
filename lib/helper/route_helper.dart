@@ -26,6 +26,9 @@ import 'package:sixam_mart/features/auth/screens/sign_in_screen.dart';
 import 'package:sixam_mart/features/auth/screens/sign_up_screen.dart';
 import 'package:sixam_mart/features/auth/screens/store_registration_screen.dart';
 import 'package:sixam_mart/features/category/screens/category_screen.dart';
+import 'package:sixam_mart/features/home/screens/all_service_categories_screen.dart';
+import 'package:sixam_mart/features/home/screens/available_services_screen.dart';
+import 'package:sixam_mart/features/home/screens/services_by_category_screen.dart';
 import 'package:sixam_mart/features/location/screens/map_screen.dart';
 import 'package:sixam_mart/features/store/screens/campaign_screen.dart';
 import 'package:sixam_mart/helper/address_helper.dart';
@@ -149,6 +152,10 @@ class RouteHelper {
   static const String subscriptionSuccess = '/subscription-success';
   static const String subscriptionPayment = '/subscription-payment';
   static const String newUserSetupScreen = '/new-user-setup-screen';
+  
+  static const String allServiceCategories = '/all-service-categories';
+  static const String servicesByCategory = '/services-by-category';
+  static const String availableServices = '/available-services';
 
   // static const String newHome = '/new-home';
   // static const String taxiModuleLocation = '/texi-module-location';
@@ -310,6 +317,14 @@ class RouteHelper {
   static String getNewUserSetupScreen({required String name, required String loginType, required String? phone, required String? email}) {
     return '$newUserSetupScreen?name=$name&login_type=$loginType&phone=$phone&email=$email';
   }
+  
+  static String getAllServiceCategoriesRoute() => allServiceCategories;
+  static String getServicesByCategoryRoute(int categoryId, String categoryName) {
+    List<int> encoded = utf8.encode(categoryName);
+    String data = base64Encode(encoded);
+    return '$servicesByCategory?id=$categoryId&name=$data';
+  }
+  static String getAvailableServicesRoute() => availableServices;
 
   static List<GetPage> routes = [
     GetPage(name: initial, page: () => getRoute(DashboardScreen(pageIndex: 0, fromSplash: Get.parameters['from-splash'] == 'true'))),
@@ -461,6 +476,13 @@ class RouteHelper {
       String data = utf8.decode(decode);
       return getRoute(CategoryItemScreen(categoryID: Get.parameters['id'], categoryName: data));
     }),
+    GetPage(name: allServiceCategories, page: () => getRoute(const AllServiceCategoriesScreen())),
+    GetPage(name: servicesByCategory, page: () {
+      List<int> decode = base64Decode(Get.parameters['name']!.replaceAll(' ', '+'));
+      String data = utf8.decode(decode);
+      return getRoute(ServicesByCategoryScreen(categoryID: Get.parameters['id'], categoryName: data));
+    }),
+    GetPage(name: availableServices, page: () => getRoute(const AvailableServicesScreen())),
     GetPage(name: popularItems, page: () => getRoute(PopularItemScreen(isPopular: Get.parameters['page'] == 'popular', isSpecial: Get.parameters['special'] == 'true'))),
     GetPage(name: itemCampaign, page: () => getRoute(ItemCampaignScreen(isJustForYou: Get.parameters['just-for-you'] == 'true'))),
     GetPage(name: support, page: () => const SupportScreen()),
