@@ -324,7 +324,7 @@ class RouteHelper {
     String data = base64Encode(encoded);
     return '$servicesByCategory?id=$categoryId&name=$data';
   }
-  static String getAvailableServicesRoute() => availableServices;
+  static String getAvailableServicesRoute({int? categoryIndex}) => '$availableServices?category-index=${categoryIndex ?? 0}';
 
   static List<GetPage> routes = [
     GetPage(name: initial, page: () => getRoute(DashboardScreen(pageIndex: 0, fromSplash: Get.parameters['from-splash'] == 'true'))),
@@ -482,7 +482,10 @@ class RouteHelper {
       String data = utf8.decode(decode);
       return getRoute(ServicesByCategoryScreen(categoryID: Get.parameters['id'], categoryName: data));
     }),
-    GetPage(name: availableServices, page: () => getRoute(const AvailableServicesScreen())),
+    GetPage(name: availableServices, page: () {
+      int categoryIndex = int.parse(Get.parameters['category-index'] ?? '0');
+      return getRoute(AvailableServicesScreen(initialCategoryIndex: categoryIndex));
+    }),
     GetPage(name: popularItems, page: () => getRoute(PopularItemScreen(isPopular: Get.parameters['page'] == 'popular', isSpecial: Get.parameters['special'] == 'true'))),
     GetPage(name: itemCampaign, page: () => getRoute(ItemCampaignScreen(isJustForYou: Get.parameters['just-for-you'] == 'true'))),
     GetPage(name: support, page: () => const SupportScreen()),

@@ -9,26 +9,31 @@ import 'package:sixam_mart/util/styles.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
 
 class AvailableServicesScreen extends StatefulWidget {
-  const AvailableServicesScreen({super.key});
+  final int initialCategoryIndex;
+  
+  const AvailableServicesScreen({super.key, this.initialCategoryIndex = 0});
 
   @override
   State<AvailableServicesScreen> createState() => _AvailableServicesScreenState();
 }
 
 class _AvailableServicesScreenState extends State<AvailableServicesScreen> {
-  int _selectedCategoryIndex = 0;
+  late int _selectedCategoryIndex;
 
   @override
   void initState() {
     super.initState();
+    _selectedCategoryIndex = widget.initialCategoryIndex;
+    
     // Ensure service categories are loaded
     Get.find<CategoryController>().getServiceCategoryList(false).then((_) {
-      // Load subcategories for the first category
+      // Load subcategories for the selected category
       final categoryController = Get.find<CategoryController>();
       if (categoryController.serviceCategoryList != null && 
           categoryController.serviceCategoryList!.isNotEmpty &&
-          categoryController.serviceCategoryList![0].uuid != null) {
-        categoryController.getServiceSubCategoryList(categoryController.serviceCategoryList![0].uuid!);
+          _selectedCategoryIndex < categoryController.serviceCategoryList!.length &&
+          categoryController.serviceCategoryList![_selectedCategoryIndex].uuid != null) {
+        categoryController.getServiceSubCategoryList(categoryController.serviceCategoryList![_selectedCategoryIndex].uuid!);
       }
     });
   }
